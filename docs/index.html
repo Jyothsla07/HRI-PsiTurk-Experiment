@@ -3,21 +3,54 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1">
-  <title>HRI Learning Study</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HRI Study - Connection Test</title>
 </head>
 <body>
-  <main>
-    <h1>Human–Robot Interaction Learning Study</h1>
-    <p>
-      This study explores learning about
-      Round Robin CPU scheduling.
-    </p>
-    <p>
-      The online study is being prepared.
-      Participant enrollment is not yet open.
-    </p>
-  </main>
+  <h1>HRI Experiment</h1>
+  <p>Testing the Google Sheets connection.</p>
+
+  <button id="testButton">Send Test Response</button>
+  <p id="status"></p>
+
+  <script>
+    const SCRIPT_URL =
+      "https://script.google.com/macros/s/AKfycbxpjKrUQABopKJM-yyo0d0uaMagBDQQq20XDPF_fMDNdLGAq472fgprkKONUw-YB0E/exec";
+
+    document.getElementById("testButton").onclick = async function () {
+      const status = document.getElementById("status");
+      status.textContent = "Sending test response...";
+
+      const submissionId = "test_browser_" +
+        crypto.randomUUID().replace(/-/g, "");
+
+      const data = {
+        submission_id: submissionId,
+        participant_id: "test_participant_001",
+        condition: 0,
+        stage: "test",
+        responses: {
+          message: "Test submitted from GitHub Pages"
+        }
+      };
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "text/plain"
+          },
+          body: JSON.stringify(data)
+        });
+
+        status.textContent =
+          "Request sent. Check Google Sheets for: " + submissionId;
+      } catch (error) {
+        status.textContent =
+          "Request failed: " + error.message;
+      }
+    };
+  </script>
 </body>
 </html>
