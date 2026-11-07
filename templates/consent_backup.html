@@ -1,0 +1,63 @@
+{% extends 'layouts/layout.html' %}
+
+{% block head %}
+{{ super() }}
+<meta charset="utf-8">
+<title>HRI Study - Consent</title>
+<link rel="stylesheet" href="/static/css/bootstrap.min.css">
+<link rel="stylesheet" href="/static/css/style.css">
+{% endblock %}
+
+{% block body %}
+
+<div style="max-width:800px; margin:50px auto; padding:30px;">
+
+    <h1>Research Study Consent</h1>
+
+    <hr>
+
+    <h3>Learning Activities and Social Robots</h3>
+
+    <p>
+        You are invited to participate in a study about learning activities
+        and social robots.
+    </p>
+
+    <p>
+        In this study, you will complete a short educational activity,
+        answer a learning quiz, and complete a questionnaire about your
+        experience.
+    </p>
+
+    <p>
+        Your responses will be recorded for research purposes.
+        Participation is voluntary, and you may stop participating at any time.
+    </p>
+
+    <hr>
+
+    <h4>Do you understand and consent to these terms?</h4>
+
+    <br>
+
+    <div style="text-align:center;">
+
+        <button type="button"
+                class="btn btn-primary btn-lg"
+                onclick="window.location='/exp?hitId={{ hitid }}&assignmentId={{ assignmentid }}&workerId={{ workerid }}'">
+            I Agree
+        </button>
+
+        &nbsp;&nbsp;&nbsp;&nbsp;
+
+        <button type="button"
+                class="btn btn-danger btn-lg"
+                onclick="window.close();">
+            No, I Do Not Agree
+        </button>
+
+    </div>
+
+</div>
+
+{% endblock %}

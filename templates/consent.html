@@ -1,0 +1,105 @@
+{% extends 'layouts/layout.html' %}
+
+{% block head %}
+{{ super() }}
+<meta charset="utf-8">
+<title>HRI Study - Consent</title>
+<link rel="stylesheet" href="/static/css/bootstrap.min.css">
+<link rel="stylesheet" href="/static/css/style.css">
+{% endblock %}
+
+{% block body %}
+
+<div style="max-width:1000px; margin:40px auto; padding:30px; font-family:Arial,sans-serif; line-height:1.7;">
+
+    <h1 style="font-weight:bold;">We need your consent to proceed</h1>
+    <hr>
+
+    <p>
+        You are invited to participate in a research study examining
+        how different instructional methods affect learning and
+        understanding of Operating Systems concepts.
+    </p>
+
+    <p>
+        <strong>Purpose of Research:</strong>
+        This study investigates how robot-based video instruction
+        and computer-based learning materials influence students'
+        understanding, engagement, and learning experiences.
+    </p>
+
+    <p>
+        <strong>What you will do in this study:</strong>
+        If you agree to participate, you will complete a demographic
+        questionnaire, indicate your familiarity with Round Robin
+        scheduling, and complete an audio/video check.
+        You will then study Round Robin and Weighted Round Robin
+        CPU scheduling using the assigned learning materials,
+        complete two quizzes, and answer a brief survey about
+        your learning experience.
+    </p>
+
+    <p>
+        <strong>Time required:</strong>
+        The study is expected to take approximately 40–50 minutes,
+        depending on how long you spend reviewing the learning materials.
+    </p>
+
+    <p>
+        <strong>Risks and discomfort:</strong>
+        No significant risks beyond those ordinarily associated
+        with computer-based learning activities are anticipated.
+    </p>
+
+    <p>
+        <strong>Benefits:</strong>
+        There may be no direct personal benefit from participating.
+        The findings may help researchers better understand
+        the effectiveness of different educational methods.
+    </p>
+
+    <p>
+        <strong>Confidentiality:</strong>
+        Your responses will be collected for research purposes
+        and handled in accordance with the approved study protocol.
+        Research results may be reported in aggregate form
+        without identifying individual participants.
+    </p>
+
+    <p>
+        <strong>Participation and Withdrawal:</strong>
+        Participation is voluntary. You may choose not to participate
+        or stop at any time without penalty.
+    </p>
+
+    <hr>
+
+    <h3>Do you understand and consent to these terms?</h3>
+
+    <p>
+        By selecting "I Agree," you confirm that you have read
+        and understood the information above and voluntarily
+        agree to participate in this study.
+    </p>
+
+    <div style="text-align:center; margin-top:30px;">
+
+        <button type="button"
+                class="btn btn-primary btn-lg"
+                onclick="window.location='/exp?hitId={{ hitid }}&assignmentId={{ assignmentid }}&workerId={{ workerid }}'">
+            I Agree
+        </button>
+
+        &nbsp;&nbsp;&nbsp;&nbsp;
+
+        <button type="button"
+                class="btn btn-danger btn-lg"
+                onclick="window.close();">
+            No, I Do Not Agree
+        </button>
+
+    </div>
+
+</div>
+
+{% endblock %}
