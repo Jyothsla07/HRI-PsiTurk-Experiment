@@ -1,0 +1,30 @@
+
+# Example configuration for local testing
+# Copy to config.txt and customize for your machine.
+# Never publish real credentials or participant data.
+
+[HIT Configuration]
+title = HRI Learning Experiment
+description = Learning about Round Robin Scheduling
+amt_keywords = education, learning, scheduling
+organization_name = Research Study
+
+[Database Parameters]
+database_url = sqlite:///participants.db
+
+[Server Parameters]
+host = localhost
+port = 22362
+logfile = server.log
+debug = true
+login_username = CHANGE_ME_USERNAME
+login_pw = CHANGE_ME_PASSWORD
+secret_key = CHANGE_ME_TO_A_RANDOM_SECRET
+
+[Task Parameters]
+experiment_code_version = 1.0
+num_conds = 2
+num_counters = 1
+
+[Shell Parameters]
+launch_in_sandbox_mode = true
