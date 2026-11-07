@@ -1,0 +1,348 @@
+
+var psiTurk = new PsiTurk(uniqueId, adServerLoc, mode);
+var mycondition = Number(condition);
+var robotCondition = (mycondition === 0);
+var conditionName = robotCondition ? "Robot Video" : "Computer PDF";
+
+var instructionPages = [
+    "instructions/instruct-1.html",
+    "instructions/instruct-2.html",
+    "instructions/instruct-3.html",
+    "instructions/instruct-ready.html"
+];
+
+var pages = instructionPages.concat(["stage.html"]);
+var init = psiTurk.preloadPages(pages);
+
+var quizQuestions = [
+    {
+        q: "Which type of CPU scheduling algorithm is Round Robin?",
+        a: ["Non-preemptive", "Preemptive", "Priority-only", "Batch-only"],
+        correct: 1
+    },
+    {
+        q: "What does the time quantum represent?",
+        a: ["Total execution time", "Maximum CPU time per turn", "Waiting time", "Arrival time"],
+        correct: 1
+    },
+    {
+        q: "How are ready processes organized in Round Robin?",
+        a: ["LIFO", "Shortest burst first", "FIFO", "Highest priority first"],
+        correct: 2
+    },
+    {
+        q: "What happens when an unfinished process uses its entire time quantum?",
+        a: ["It returns to the back of the ready queue", "It terminates", "It keeps the CPU", "It is permanently blocked"],
+        correct: 0
+    },
+    {
+        q: "What happens when a process finishes before its quantum expires?",
+        a: ["It restarts", "It leaves the ready queue", "It runs again", "It waits for another quantum"],
+        correct: 1
+    },
+    {
+        q: "P1, P2, and P3 are ready in that order, and all need more than one quantum. What is the order of their first turns?",
+        a: ["P1, P2, P3", "P3, P2, P1", "P1, P3, P2", "P2, P1, P3"],
+        correct: 0
+    },
+    {
+        q: "What is context switching?",
+        a: ["Increasing burst time", "Changing process priority", "Switching CPU execution between processes", "Changing CPU speed"],
+        correct: 2
+    },
+    {
+        q: "What can happen when the time quantum is very small?",
+        a: ["More context-switch overhead", "No context switching", "All processes finish instantly", "Processes cannot arrive"],
+        correct: 0
+    },
+    {
+        q: "A very large time quantum makes Round Robin resemble which algorithm?",
+        a: ["Shortest Job First", "First-Come, First-Served", "Priority Scheduling", "Shortest Remaining Time First"],
+        correct: 1
+    },
+    {
+        q: "Why is Round Robin considered fair?",
+        a: ["Shortest jobs always run first", "Each ready process receives repeated CPU opportunities", "Highest priority always runs first", "One process runs until completion"],
+        correct: 1
+       }
+];
+var quizResults = null;
+
+var surveyItems = [
+    ["engagement","The learning activity kept me engaged."],
+    ["clarity","The explanation was clear and understandable."],
+    ["usefulness","The learning material was useful."],
+    ["cognitive_load","The material required substantial mental effort."],
+    ["satisfaction","I am satisfied with this learning experience."]
+];
+
+var stage = function(html) {
+    psiTurk.showPage("stage.html");
+    $("#stage").html(
+        '<div style="max-width:900px;margin:35px auto;padding:20px">' +
+        html + '</div>'
+    );
+};
+
+var saveProgress = function(done) {
+    psiTurk.saveData({
+        success: function() { if (done) done(); },
+        error: function() {
+            alert("Data could not be saved. Please check your connection and try again.");
+        }
+    });
+};
+
+var HRIExperiment = function() {
+    if (mycondition !== 0 && mycondition !== 1) {
+        stage("<h2>Invalid experimental condition</h2><p>Please contact the researcher.</p>");
+        return;
+    }
+
+    psiTurk.recordUnstructuredData("learning_condition", conditionName);
+    psiTurk.recordTrialData({
+        phase:"assignment",
+        condition:mycondition,
+        condition_name:conditionName
+    });
+
+    var startTime = Date.now();
+    var material = robotCondition
+        ? '<video id="lessonVideo" controls playsinline preload="metadata" ' +
+          'style="width:100%;max-height:520px">' +
+          '<source src="/static/materials/round_robin_robot.mp4" type="video/mp4">' +
+          'Your browser cannot play this video.</video>'
+        : '<iframe title="Round Robin lesson" ' +
+          'src="/static/materials/round_robin.pdf#toolbar=1" ' +
+          'style="width:100%;height:550px;border:1px solid #ccc"></iframe>';
+
+    stage(
+        '<h1>Round Robin CPU Scheduling</h1>' +
+        '<p><strong>Learning method:</strong> ' + conditionName + '</p>' +
+        '<p>Study the material carefully. You will answer 10 questions afterward.</p>' +
+        material +
+        '<p style="margin-top:20px"><button id="beginQuiz" ' +
+        'class="btn btn-primary btn-lg">Continue to Quiz</button></p>'
+    );
+
+    $("#beginQuiz").on("click", function() {
+        var elapsed = Math.round((Date.now()-startTime)/1000);
+        psiTurk.recordTrialData({
+            phase:"learning",
+            condition:mycondition,
+            exposure_seconds:elapsed
+        });
+        saveProgress(showQuiz);
+    });
+};
+
+var showQuiz = function() {
+    var quizStart = Date.now();
+    var limit = 15 * 60 * 1000;
+    var submitted = false;
+    var timerId;
+
+    var html = '<h1>Round Robin Knowledge Quiz</h1>' +
+        '<p>Answer all 10 questions. You have 15 minutes.</p>' +
+        '<h3 id="countdown" style="position:sticky;top:0;background:white;' +
+        'padding:12px;border:1px solid #ddd;z-index:10">15:00</h3>';
+
+    quizQuestions.forEach(function(item,i) {
+        html += '<div style="padding:16px;margin:15px 0;border:1px solid #ddd">' +
+                '<h4>Question '+(i+1)+': '+item.q+'</h4>';
+        item.a.forEach(function(option,j) {
+            html += '<label style="display:block;margin:10px 0">' +
+                    '<input type="radio" name="q'+i+'" value="'+j+'"> ' +
+                    String.fromCharCode(65+j)+'. '+option+'</label>';
+        });
+        html += '</div>';
+    });
+
+    html += '<button id="submitQuiz" class="btn btn-primary btn-lg">' +
+            'Submit Quiz</button>';
+
+    stage(html);
+
+    function submitQuiz(timedOut) {
+        if (submitted) return;
+        submitted = true;
+        clearInterval(timerId);
+
+        var elapsed = Math.min((Date.now()-quizStart)/1000,900);
+        var answers = [];
+        var score = 0;
+
+        quizQuestions.forEach(function(item,i) {
+            var value = $('input[name="q'+i+'"]:checked').val();
+            var answer = value === undefined ? null : Number(value);
+            var correct = answer === item.correct;
+            if (correct) score++;
+
+            answers.push(answer);
+
+            psiTurk.recordTrialData({
+                phase:"quiz_question",
+                question_number:i+1,
+                answer:answer,
+                correct_answer:item.correct,
+                is_correct:correct
+            });
+        });
+
+        quizResults = {
+            score: score,
+            answers: answers.slice(),
+            seconds: Math.round(elapsed * 100) / 100,
+            timedOut: timedOut
+        };
+
+        psiTurk.recordTrialData({
+            phase:"quiz_summary",
+            condition:mycondition,
+            score:score,
+            total_questions:10,
+            completion_seconds:Math.round(elapsed*100)/100,
+            timed_out:timedOut,
+            answers:answers
+        });
+
+        psiTurk.recordUnstructuredData("quiz_score",score);
+        psiTurk.recordUnstructuredData("quiz_seconds",Math.round(elapsed*100)/100);
+        psiTurk.recordUnstructuredData("quiz_timed_out",timedOut);
+
+        stage('<h2>Quiz submitted</h2><p>Saving your responses...</p>');
+        saveProgress(showSurvey);
+    }
+
+    $("#submitQuiz").on("click",function() {
+        if (confirm("Submit your quiz answers?")) submitQuiz(false);
+    });
+
+    function updateTimer() {
+        if (submitted) return;
+        var remaining = Math.max(0,limit-(Date.now()-quizStart));
+        var seconds = Math.ceil(remaining/1000);
+        var mm = String(Math.floor(seconds/60)).padStart(2,"0");
+        var ss = String(seconds%60).padStart(2,"0");
+        $("#countdown").text("Time remaining: "+mm+":"+ss);
+        if (remaining <= 0) submitQuiz(true);
+    }
+
+    updateTimer();
+    timerId = setInterval(updateTimer,250);
+};
+
+
+var showResults = function() {
+    if (!quizResults) {
+        stage("<h2>Results unavailable</h2>");
+        return;
+    }
+
+    var score = quizResults.score;
+    var percentage = Math.round(score * 10);
+
+    var html =
+        '<h1>Round Robin Quiz Results</h1>' +
+        '<h2>Your Score: ' + score + ' / 10 (' +
+        percentage + '%)</h2>' +
+        '<p>Quiz completion time: ' +
+        quizResults.seconds + ' seconds</p>' +
+        '<hr><h3>Review Your Incorrect Answers</h3>';
+
+    var wrongCount = 0;
+
+    quizQuestions.forEach(function(q, i) {
+        var answer = quizResults.answers[i];
+
+        if (answer !== q.correct) {
+            wrongCount++;
+
+            var selected = answer === null
+                ? "Not answered"
+                : q.a[answer];
+
+            html +=
+                '<div style="border:1px solid #ddd;' +
+                'padding:15px;margin:15px 0;border-radius:8px">' +
+                '<h4>Question ' + (i + 1) + ': ' + q.q + '</h4>' +
+                '<p style="color:#b91c1c"><strong>Your answer:</strong> ' +
+                selected + '</p>' +
+                '<p style="color:#15803d"><strong>Correct answer:</strong> ' +
+                q.a[q.correct] + '</p>' +
+                '</div>';
+        }
+    });
+
+    if (wrongCount === 0) {
+        html += '<p>Excellent! You answered every question correctly.</p>';
+    }
+
+    if (quizResults.timedOut) {
+        html += '<p>The quiz was automatically submitted when time expired.</p>';
+    }
+
+    html +=
+        '<hr><h3>Thank you for participating!</h3>' +
+        '<p>Your responses have been saved. You may close this tab.</p>';
+
+    stage(html);
+};
+
+var showSurvey = function() {
+    var html = '<h1>Post-Learning Survey</h1>' +
+        '<p>Rate each statement from 1 (Strongly disagree) ' +
+        'to 5 (Strongly agree).</p>';
+
+    surveyItems.forEach(function(item,i) {
+        html += '<div style="padding:15px;border-bottom:1px solid #ddd">' +
+                '<h4>'+(i+1)+'. '+item[1]+'</h4>';
+        for (var n=1;n<=5;n++) {
+            html += '<label style="margin-right:18px">' +
+                    '<input type="radio" name="'+item[0]+'" value="'+n+'"> '+n+
+                    '</label>';
+        }
+        html += '</div>';
+    });
+
+    html += '<p style="margin-top:25px"><button id="finishStudy" ' +
+            'class="btn btn-success btn-lg">Finish Study</button></p>';
+
+    stage(html);
+
+    $("#finishStudy").on("click",function() {
+        var responses = {};
+        for (var i=0;i<surveyItems.length;i++) {
+            var key = surveyItems[i][0];
+            var value = $('input[name="'+key+'"]:checked').val();
+            if (!value) {
+                alert("Please answer all survey questions.");
+                return;
+            }
+            responses[key] = Number(value);
+        }
+
+        $("#finishStudy").prop("disabled",true);
+
+        Object.keys(responses).forEach(function(key) {
+            psiTurk.recordUnstructuredData(key,responses[key]);
+        });
+
+        psiTurk.recordTrialData({
+            phase:"survey",
+            condition:mycondition,
+            responses:responses
+        });
+
+        saveProgress(function() {
+            showResults();
+        });
+    });
+};
+
+$(window).on("load", async function() {
+    await init;
+    psiTurk.doInstructions(instructionPages,function() {
+        new HRIExperiment();
+    });
+});
