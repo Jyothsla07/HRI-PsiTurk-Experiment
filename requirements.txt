@@ -52,7 +52,6 @@ toml==0.10.2
 tzlocal==5.4.4
 ua-parser==1.0.2
 ua-parser-builtins==202606
-urllib3==1.25.11
 user-agents==2.2.0
 wcwidth==0.9.1
 Werkzeug==1.0.1
